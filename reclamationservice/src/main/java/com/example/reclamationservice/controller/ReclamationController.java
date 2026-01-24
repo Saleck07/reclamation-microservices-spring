@@ -87,6 +87,24 @@ public class ReclamationController {
     }
     
     /**
+     * Mettre à jour une réclamation complète
+     * PUT /api/reclamations/{id}
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<ReclamationDTO> updateReclamation(
+            @PathVariable Long id,
+            @RequestBody ReclamationRequest request) {
+        log.info("Requête de mise à jour complète de la réclamation avec ID: {}", id);
+        try {
+            ReclamationDTO updatedReclamation = reclamationService.updateReclamation(id, request);
+            return ResponseEntity.ok(updatedReclamation);
+        } catch (RuntimeException e) {
+            log.error("Erreur lors de la mise à jour: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }
+    
+    /**
      * Mettre à jour le statut d'une réclamation
      * PUT /api/reclamations/{id}/statut
      */
@@ -133,6 +151,22 @@ public class ReclamationController {
         } catch (RuntimeException e) {
             log.error("Erreur lors du traitement: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }
+    
+    /**
+     * Supprimer une réclamation
+     * DELETE /api/reclamations/{id}
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteReclamation(@PathVariable Long id) {
+        log.info("Requête de suppression de la réclamation avec ID: {}", id);
+        try {
+            reclamationService.deleteReclamation(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            log.error("Erreur lors de la suppression: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 }

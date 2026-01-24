@@ -26,12 +26,12 @@ This system consists of four microservices:
         ┌──────────────────┼──────────────────┐
         │                  │                   │
    ┌────▼─────┐      ┌─────▼──────┐    ┌──────▼──────┐
-   │   User   │      │ Reclamation │    │   Eureka    │
-   │ Service  │      │   Service   │    │   Server    │
-   │(Port 8081)│      │ (Port 8082) │    │ (Port 8761) │
+   │   User   │      │ Reclamation│    │   Eureka    │
+   │ Service  │      │   Service  │    │   Server    │
+   │(Port 8081)│     │ (Port 8082)│    │ (Port 8761) │
    └────┬─────┘      └─────┬──────┘    └──────┬──────┘
         │                  │                   │
-   ┌────▼─────┐      ┌─────▼──────┐           │
+   ┌────▼─────┐      ┌─────▼────-──┐           │
    │PostgreSQL│      │    MySQL    │           │
    │  userdb  │      │reclamationdb│           │
    └──────────┘      └─────────────┘           │

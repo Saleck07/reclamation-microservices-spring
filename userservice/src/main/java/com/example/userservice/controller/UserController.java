@@ -88,4 +88,36 @@ public class UserController {
         boolean exists = userService.userExists(id);
         return ResponseEntity.ok(exists);
     }
+    
+    /**
+     * Mettre à jour un utilisateur
+     * PUT /api/users/{id}
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody UserRequest request) {
+        log.info("Requête de mise à jour de l'utilisateur avec ID: {}", id);
+        try {
+            UserDTO updatedUser = userService.updateUser(id, request);
+            return ResponseEntity.ok(updatedUser);
+        } catch (RuntimeException e) {
+            log.error("Erreur lors de la mise à jour: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }
+    
+    /**
+     * Supprimer un utilisateur
+     * DELETE /api/users/{id}
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        log.info("Requête de suppression de l'utilisateur avec ID: {}", id);
+        try {
+            userService.deleteUser(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            log.error("Erreur lors de la suppression: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
 }

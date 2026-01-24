@@ -85,6 +85,41 @@ public class UserService {
     }
     
     /**
+     * Mettre à jour un utilisateur
+     */
+    public UserDTO updateUser(Long id, UserRequest request) {
+        log.info("Mise à jour de l'utilisateur avec ID: {}", id);
+        
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'ID: " + id));
+        
+        // Vérifier si le nouvel email existe déjà (sauf si c'est le même)
+        if (!user.getEmail().equals(request.getEmail()) && userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Un utilisateur avec cet email existe déjà: " + request.getEmail());
+        }
+        
+        user.setNom(request.getNom());
+        user.setEmail(request.getEmail());
+        user.setTelephone(request.getTelephone());
+        
+        User updatedUser = userRepository.save(user);
+        log.info("Utilisateur mis à jour avec succès, ID: {}", updatedUser.getId());
+        
+        return mapToDTO(updatedUser);
+    }
+    
+    /**
+     * Supprimer un utilisateur
+     */
+    public void deleteUser(Long id) {
+        log.info("Suppression de l'utilisateur avec ID: {}", id);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'ID: " + id));
+        userRepository.delete(user);
+        log.info("Utilisateur supprimé avec succès, ID: {}", id);
+    }
+    
+    /**
      * Mapper User vers UserDTO
      */
     private UserDTO mapToDTO(User user) {

@@ -94,6 +94,32 @@ public class ReclamationService {
     }
     
     /**
+     * Mettre à jour une réclamation complète
+     */
+    public ReclamationDTO updateReclamation(Long id, ReclamationRequest request) {
+        log.info("Mise à jour complète de la réclamation avec ID: {}", id);
+        
+        Reclamation reclamation = reclamationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Réclamation non trouvée avec l'ID: " + id));
+        
+        // Si l'utilisateur change, vérifier qu'il existe
+        if (!reclamation.getUserId().equals(request.getUserId())) {
+            if (!userServiceClient.userExists(request.getUserId())) {
+                throw new RuntimeException("L'utilisateur avec l'ID " + request.getUserId() + " n'existe pas");
+            }
+        }
+        
+        reclamation.setTitre(request.getTitre());
+        reclamation.setDescription(request.getDescription());
+        reclamation.setUserId(request.getUserId());
+        
+        Reclamation updatedReclamation = reclamationRepository.save(reclamation);
+        log.info("Réclamation mise à jour avec succès, ID: {}", updatedReclamation.getId());
+        
+        return mapToDTO(updatedReclamation);
+    }
+    
+    /**
      * Mettre à jour le statut d'une réclamation
      */
     public ReclamationDTO updateStatut(Long id, StatutReclamation newStatut) {
@@ -142,6 +168,17 @@ public class ReclamationService {
         }
         
         return updateStatut(id, StatutReclamation.TRAITEE);
+    }
+    
+    /**
+     * Supprimer une réclamation
+     */
+    public void deleteReclamation(Long id) {
+        log.info("Suppression de la réclamation avec ID: {}", id);
+        Reclamation reclamation = reclamationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Réclamation non trouvée avec l'ID: " + id));
+        reclamationRepository.delete(reclamation);
+        log.info("Réclamation supprimée avec succès, ID: {}", id);
     }
     
     /**
