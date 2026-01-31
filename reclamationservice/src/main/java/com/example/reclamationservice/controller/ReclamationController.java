@@ -5,6 +5,11 @@ import com.example.reclamationservice.dto.ReclamationRequest;
 import com.example.reclamationservice.dto.StatutUpdateRequest;
 import com.example.reclamationservice.model.StatutReclamation;
 import com.example.reclamationservice.service.ReclamationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -17,6 +22,7 @@ import java.util.List;
 @RequestMapping("/api/reclamations")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Réclamations", description = "Gestion des réclamations et de leur cycle de vie")
 public class ReclamationController {
     
     private final ReclamationService reclamationService;

@@ -3,6 +3,11 @@ package com.example.userservice.controller;
 import com.example.userservice.dto.UserDTO;
 import com.example.userservice.dto.UserRequest;
 import com.example.userservice.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -15,6 +20,7 @@ import java.util.List;
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Utilisateurs", description = "Gestion des utilisateurs du système de réclamations")
 public class UserController {
     
     private final UserService userService;
@@ -23,6 +29,11 @@ public class UserController {
      * Créer un nouveau utilisateur
      * POST /api/users
      */
+    @Operation(summary = "Créer un utilisateur", description = "Crée un nouveau utilisateur dans le système")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Utilisateur créé avec succès"),
+            @ApiResponse(responseCode = "400", description = "Données invalides (email déjà existant)")
+    })
     @PostMapping
     public ResponseEntity<UserDTO> createUser(@RequestBody UserRequest request) {
         log.info("Requête de création d'utilisateur reçue: {}", request.getEmail());
@@ -39,6 +50,8 @@ public class UserController {
      * Récupérer tous les utilisateurs
      * GET /api/users
      */
+    @Operation(summary = "Lister tous les utilisateurs", description = "Récupère la liste de tous les utilisateurs")
+    @ApiResponse(responseCode = "200", description = "Liste des utilisateurs récupérée avec succès")
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         log.info("Requête de récupération de tous les utilisateurs");
@@ -50,8 +63,14 @@ public class UserController {
      * Récupérer un utilisateur par ID
      * GET /api/users/{id}
      */
+    @Operation(summary = "Obtenir un utilisateur par ID", description = "Récupère les détails d'un utilisateur spécifique")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Utilisateur trouvé"),
+            @ApiResponse(responseCode = "404", description = "Utilisateur non trouvé")
+    })
     @GetMapping("/{id}")
-    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
+    public ResponseEntity<UserDTO> getUserById(
+            @Parameter(description = "ID de l'utilisateur") @PathVariable Long id) {
         log.info("Requête de récupération de l'utilisateur avec ID: {}", id);
         try {
             UserDTO user = userService.getUserById(id);
@@ -93,8 +112,15 @@ public class UserController {
      * Mettre à jour un utilisateur
      * PUT /api/users/{id}
      */
+    @Operation(summary = "Mettre à jour un utilisateur", description = "Modifie les informations d'un utilisateur existant")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Utilisateur mis à jour avec succès"),
+            @ApiResponse(responseCode = "400", description = "Données invalides")
+    })
     @PutMapping("/{id}")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody UserRequest request) {
+    public ResponseEntity<UserDTO> updateUser(
+            @Parameter(description = "ID de l'utilisateur") @PathVariable Long id,
+            @RequestBody UserRequest request) {
         log.info("Requête de mise à jour de l'utilisateur avec ID: {}", id);
         try {
             UserDTO updatedUser = userService.updateUser(id, request);
@@ -109,8 +135,14 @@ public class UserController {
      * Supprimer un utilisateur
      * DELETE /api/users/{id}
      */
+    @Operation(summary = "Supprimer un utilisateur", description = "Supprime un utilisateur du système")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Utilisateur supprimé avec succès"),
+            @ApiResponse(responseCode = "404", description = "Utilisateur non trouvé")
+    })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteUser(
+            @Parameter(description = "ID de l'utilisateur") @PathVariable Long id) {
         log.info("Requête de suppression de l'utilisateur avec ID: {}", id);
         try {
             userService.deleteUser(id);

@@ -1,7 +1,9 @@
 package com.example.reclamationservice.service;
 
+import com.example.reclamationservice.dto.NotificationRequest;
 import com.example.reclamationservice.dto.ReclamationDTO;
 import com.example.reclamationservice.dto.ReclamationRequest;
+import com.example.reclamationservice.dto.UserDTO;
 import com.example.reclamationservice.model.Reclamation;
 import com.example.reclamationservice.model.StatutReclamation;
 import com.example.reclamationservice.repository.ReclamationRepository;
@@ -21,6 +23,7 @@ public class ReclamationService {
     
     private final ReclamationRepository reclamationRepository;
     private final UserServiceClient userServiceClient;
+    private final NotificationServiceClient notificationServiceClient;
     
     /**
      * Créer une nouvelle réclamation
@@ -42,6 +45,9 @@ public class ReclamationService {
         Reclamation savedReclamation = reclamationRepository.save(reclamation);
         log.info("Réclamation créée avec succès, ID: {}, Statut: {}", 
                 savedReclamation.getId(), savedReclamation.getStatut());
+        
+        // Envoyer une notification à l'utilisateur
+        sendNotificationForReclamation(savedReclamation, "RECUE");
         
         return mapToDTO(savedReclamation);
     }
@@ -151,7 +157,12 @@ public class ReclamationService {
             throw new RuntimeException("La réclamation doit être au statut RECUE pour être prise en charge");
         }
         
-        return updateStatut(id, StatutReclamation.EN_COURS);
+        ReclamationDTO result = updateStatut(id, StatutReclamation.EN_COURS);
+        
+        // Envoyer une notification à l'utilisateur
+        sendNotificationForReclamation(reclamation, "PRISE_EN_CHARGE");
+        
+        return result;
     }
     
     /**
@@ -167,7 +178,12 @@ public class ReclamationService {
             throw new RuntimeException("La réclamation est déjà traitée");
         }
         
-        return updateStatut(id, StatutReclamation.TRAITEE);
+        ReclamationDTO result = updateStatut(id, StatutReclamation.TRAITEE);
+        
+        // Envoyer une notification à l'utilisateur
+        sendNotificationForReclamation(reclamation, "TRAITEE");
+        
+        return result;
     }
     
     /**
@@ -194,5 +210,36 @@ public class ReclamationService {
                 reclamation.getCreatedAt(),
                 reclamation.getUpdatedAt()
         );
+    }
+    
+    /**
+     * Envoyer une notification pour un changement de statut
+     */
+    private void sendNotificationForReclamation(Reclamation reclamation, String actionType) {
+        try {
+            // Récupérer les informations de l'utilisateur
+            UserDTO user = userServiceClient.getUserById(reclamation.getUserId());
+            
+            // Créer la demande de notification
+            NotificationRequest notificationRequest = new NotificationRequest();
+            notificationRequest.setReclamationId(reclamation.getId());
+            notificationRequest.setReclamationTitre(reclamation.getTitre());
+            notificationRequest.setUserId(reclamation.getUserId());
+            notificationRequest.setUserEmail(user.getEmail());
+            notificationRequest.setUserName(user.getNom());
+            notificationRequest.setActionType(actionType);
+            notificationRequest.setNewStatus(reclamation.getStatut().toString());
+            
+            // Envoyer la notification de manière asynchrone
+            notificationServiceClient.sendNotification(notificationRequest);
+            
+            log.info("Demande de notification envoyée pour la réclamation {}: {}", 
+                    reclamation.getId(), actionType);
+            
+        } catch (Exception e) {
+            log.error("Erreur lors de l'envoi de la notification pour la réclamation {}: {}", 
+                    reclamation.getId(), e.getMessage());
+            // On ne fait pas échouer l'opération principale si la notification échoue
+        }
     }
 }
